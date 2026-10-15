@@ -1,38 +1,36 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:15-alpine
-    container_name: akenzhan-postgres
+    container_name: tms-postgres
     environment:
-      POSTGRES_DB: taskdb
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${DB_NAME:-taskdb}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is not set, copy .env.example to .env}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres}"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - akenzhan-network
+      - tms-network
 
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: akenzhan-app
+    container_name: tms-app
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/taskdb
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
-      JWT_SECRET: AkenzhanAssanaliSecretKeyForJWTTokenGeneration2024VeryLongSecretKey
-      JWT_EXPIRATION: 86400000
+      DB_URL: jdbc:postgresql://db:5432/${DB_NAME:-taskdb}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is not set, copy .env.example to .env}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
     volumes:
       - ./uploads:/app/uploads
       - ./logs:/app/logs
@@ -46,12 +44,12 @@ services:
       start_period: 60s
       retries: 3
     networks:
-      - akenzhan-network
+      - tms-network
     restart: unless-stopped
 
 volumes:
   postgres_data:
 
 networks:
-  akenzhan-network:
+  tms-network:
     driver: bridge

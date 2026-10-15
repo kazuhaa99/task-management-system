@@ -3,9 +3,9 @@ spring:
     name: task-management-system
 
   datasource:
-    url: jdbc:postgresql://db:5432/taskdb
-    username: postgres
-    password: postgres
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/taskdb}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -27,8 +27,9 @@ server:
   port: 8080
 
 jwt:
-  secret: AkenzhanAssanaliSecretKeyForJWTTokenGeneration2024VeryLongSecretKey
-  expiration: 86400000
+  # Raw string, at least 32 characters (HS256). Required, no default.
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:86400000}
 
 file:
   upload-dir: uploads/
